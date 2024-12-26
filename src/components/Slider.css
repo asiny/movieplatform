@@ -1,0 +1,30 @@
+/* === Slider === */
+.slider {
+    position: relative;
+    overflow: hidden; /* Görünen alanı sınırla */
+    width: 100%; /* Slider genişliği */
+    height: 300px; /* Resimlerin yüksekliği */
+    background-color: #000; /* Arka plan (isteğe bağlı) */
+}
+
+.slider-track {
+    display: flex;
+    animation: scroll 20s linear infinite; /* Sürekli kaydır */
+}
+
+.slider-track img {
+    width: 200px;
+    height: 300px;
+    margin-right: 10px; /* Resimler arasındaki boşluk */
+    object-fit: cover; /* Resimleri düzgün hizala */
+}
+
+/* Animasyon */
+@keyframes scroll {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(-100%);
+    }
+}

@@ -1,0 +1,388 @@
+.movie-detail-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+    color: white;
+}
+
+.movie-detail-header {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 3rem;
+    background: rgba(30, 30, 30, 0.9);
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.movie-poster {
+    flex-shrink: 0;
+    width: 300px;
+}
+
+.movie-poster img {
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.movie-info {
+    flex-grow: 1;
+}
+
+.movie-info h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: white;
+}
+
+.movie-meta {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.movie-meta span {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+}
+
+.rating {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.imdb-rating, .user-rating {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #ffd700;
+}
+
+.description {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+    color: #bbbbbb;
+}
+
+.credits {
+    color: #bbbbbb;
+}
+
+.credits p {
+    margin-bottom: 0.5rem;
+}
+
+.credits strong {
+    color: white;
+}
+
+/* Reviews Section */
+.reviews-section {
+    background: rgba(30, 30, 30, 0.9);
+    border-radius: 15px;
+    padding: 2rem;
+    margin-top: 2rem;
+}
+
+.reviews-section h2 {
+    font-size: 1.8rem;
+    margin-bottom: 2rem;
+    color: white;
+}
+
+.review-form {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 1.5rem;
+    border-radius: 10px;
+    margin-bottom: 2rem;
+}
+
+.rating-input {
+    margin-bottom: 1.5rem;
+}
+
+.star-rating {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.star {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #bbbbbb;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.star.active {
+    color: #ffd700;
+}
+
+.review-input {
+    margin-bottom: 1.5rem;
+}
+
+.review-input textarea {
+    width: 100%;
+    min-height: 100px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 1rem;
+    color: white;
+    font-size: 1rem;
+    resize: vertical;
+}
+
+.submit-review {
+    background: var(--primary-color);
+    color: white;
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.submit-review:hover:not(:disabled) {
+    background: var(--secondary-color);
+    transform: translateY(-2px);
+}
+
+.submit-review:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.login-prompt {
+    text-align: center;
+    padding: 2rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    margin-bottom: 2rem;
+}
+
+.login-prompt a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.reviews-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.review-item {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 1.5rem;
+    border-radius: 10px;
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.review-author {
+    font-weight: 500;
+    color: #bbbbbb;
+}
+
+.review-rating {
+    color: #ffd700;
+}
+
+.review-comment {
+    color: white;
+    line-height: 1.5;
+    margin-bottom: 1rem;
+}
+
+.review-date {
+    color: #bbbbbb;
+    font-size: 0.9rem;
+}
+
+.no-reviews {
+    text-align: center;
+    color: #bbbbbb;
+    padding: 2rem;
+}
+
+@media (max-width: 768px) {
+    .movie-detail-header {
+        flex-direction: column;
+    }
+
+    .movie-poster {
+        width: 100%;
+        max-width: 300px;
+        margin: 0 auto;
+    }
+
+    .movie-info h1 {
+        font-size: 2rem;
+    }
+
+    .movie-meta {
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 480px) {
+    .movie-detail-container {
+        padding: 1rem;
+    }
+
+    .movie-detail-header {
+        padding: 1rem;
+    }
+
+    .movie-info h1 {
+        font-size: 1.8rem;
+    }
+
+    .rating {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+}
+
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    margin: 1.5rem 0;
+}
+
+.action-button {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 8px;
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.action-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.action-button.active {
+    background: var(--primary-color);
+}
+
+.action-button.active:hover {
+    background: var(--secondary-color);
+}
+
+.similar-movies-section {
+    background: rgba(30, 30, 30, 0.9);
+    border-radius: 15px;
+    padding: 2rem;
+    margin-top: 2rem;
+}
+
+.similar-movies-section h2 {
+    font-size: 1.8rem;
+    margin-bottom: 2rem;
+    color: white;
+}
+
+.movies-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 2rem;
+}
+
+.movies-grid .movie-card {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    color: white;
+}
+
+.movies-grid .movie-card:hover {
+    transform: translateY(-5px);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.movies-grid .movie-poster {
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+}
+
+.movies-grid .movie-info {
+    padding: 1rem;
+}
+
+.movies-grid h3 {
+    font-size: 1.1rem;
+    margin: 0 0 0.5rem 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.movies-grid .movie-meta {
+    display: flex;
+    justify-content: space-between;
+    color: #bbbbbb;
+    font-size: 0.9rem;
+}
+
+.movies-grid .rating {
+    color: #ffd700;
+}
+
+@media (max-width: 768px) {
+    .movies-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 1rem;
+    }
+
+    .movies-grid .movie-poster {
+        height: 225px;
+    }
+}
+
+@media (max-width: 480px) {
+    .similar-movies-section {
+        padding: 1rem;
+    }
+
+    .movies-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    }
+
+    .movies-grid .movie-poster {
+        height: 180px;
+    }
+
+    .movies-grid .movie-info {
+        padding: 0.5rem;
+    }
+
+    .movies-grid h3 {
+        font-size: 1rem;
+    }
+} 

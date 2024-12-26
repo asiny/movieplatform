@@ -1,0 +1,21 @@
+/* === Arka Plan Ayarları === */
+.background-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('https://via.placeholder.com/1920x1080') repeat-x;
+    animation: scrollBackground 20s linear infinite;
+    z-index: -1; /* İçerik üstte görünür */
+}
+
+/* Arka planın sağa doğru kayması */
+@keyframes scrollBackground {
+    from {
+        background-position: 0 0;
+    }
+    to {
+        background-position: -1920px 0; /* Arka planın genişliğine göre ayarla */
+    }
+}

@@ -1,0 +1,226 @@
+.profile-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+    color: white;
+}
+
+.profile-header {
+    background: rgba(30, 30, 30, 0.9);
+    border-radius: 15px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.profile-info h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.profile-info .email {
+    color: #bbbbbb;
+    font-size: 1.1rem;
+}
+
+.profile-stats {
+    display: flex;
+    gap: 2rem;
+}
+
+.stat {
+    text-align: center;
+}
+
+.stat-value {
+    display: block;
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.stat-label {
+    color: #bbbbbb;
+    font-size: 0.9rem;
+}
+
+.profile-tabs {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.tab {
+    background: rgba(30, 30, 30, 0.9);
+    border: none;
+    padding: 1rem 2rem;
+    color: white;
+    font-size: 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.tab:hover {
+    background: rgba(40, 40, 40, 0.9);
+}
+
+.tab.active {
+    background: var(--primary-color);
+}
+
+.profile-content {
+    background: rgba(30, 30, 30, 0.9);
+    border-radius: 15px;
+    padding: 2rem;
+    min-height: 400px;
+}
+
+/* Reviews List */
+.reviews-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.review-card {
+    display: flex;
+    gap: 1.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 1.5rem;
+    border-radius: 10px;
+}
+
+.review-card .movie-poster {
+    width: 100px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.review-content {
+    flex-grow: 1;
+}
+
+.review-content h3 {
+    font-size: 1.3rem;
+    margin-bottom: 0.5rem;
+}
+
+.review-rating {
+    color: #ffd700;
+    margin-bottom: 1rem;
+}
+
+.review-text {
+    color: #bbbbbb;
+    line-height: 1.5;
+    margin-bottom: 1rem;
+}
+
+.review-date {
+    color: #bbbbbb;
+    font-size: 0.9rem;
+}
+
+/* Movies Grid */
+.movies-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 2rem;
+}
+
+.movie-card {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: transform 0.3s ease;
+}
+
+.movie-card:hover {
+    transform: translateY(-5px);
+}
+
+.movie-card .movie-poster {
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+}
+
+.movie-card h3 {
+    padding: 1rem;
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+.movie-card .movie-year {
+    padding: 0 1rem 1rem;
+    color: #bbbbbb;
+    margin: 0;
+}
+
+.no-content {
+    text-align: center;
+    color: #bbbbbb;
+    padding: 3rem;
+}
+
+.login-prompt {
+    text-align: center;
+    padding: 3rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    font-size: 1.2rem;
+}
+
+.loading {
+    text-align: center;
+    padding: 3rem;
+    font-size: 1.2rem;
+}
+
+@media (max-width: 768px) {
+    .profile-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 2rem;
+    }
+
+    .profile-stats {
+        justify-content: center;
+    }
+
+    .profile-tabs {
+        flex-direction: column;
+    }
+
+    .review-card {
+        flex-direction: column;
+    }
+
+    .review-card .movie-poster {
+        width: 150px;
+        margin: 0 auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .profile-container {
+        padding: 1rem;
+    }
+
+    .profile-header {
+        padding: 1.5rem;
+    }
+
+    .profile-info h1 {
+        font-size: 2rem;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+    }
+} 
