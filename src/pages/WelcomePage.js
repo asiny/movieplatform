@@ -19,8 +19,10 @@ function WelcomePage() {
             <div className="welcome-container">
                 <h1 className="welcome-title">Film ve Dizi Dünyasına Hoş Geldiniz</h1>
                 <p className="welcome-description">
-                    Binlerce film ve dizi arasından size en uygun olanı bulmak için
-                    6 basit soruyu cevaplayın ve size özel önerilerimizi keşfedin!
+                    Yüzlerce film ve dizi arasından size en uygun olanı bulmak için
+                    kaydolun veya giriş yapın. Filmleri ve dizileri keşfedin! Favorilerinize ekleyin ve
+                    izlemek istediğiniz filmleri ve dizileri takip edin. Kişiselleştirilmiş öneriler ile
+                    en uygun seçeneği bulun!
                 </p>
                 <div className="welcome-buttons">
                     <button 
