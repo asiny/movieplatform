@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { doc, getDoc, collection, addDoc, query, where, getDocs, deleteDoc } from 'firebase/firestore';
-import { db } from '../firebase';
+import { useParams } from 'react-router-dom';
 import { UserContext } from '../context/UserContext';
+import { db, auth } from '../firebase';
+import { collection, query, getDocs, addDoc, deleteDoc, where, serverTimestamp, doc, getDoc, orderBy } from 'firebase/firestore';
 import './MovieDetailPage.css';
 
 function MovieDetailPage() {
@@ -11,181 +11,184 @@ function MovieDetailPage() {
     const [movie, setMovie] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [userRating, setUserRating] = useState(0);
-    const [review, setReview] = useState('');
-    const [reviews, setReviews] = useState([]);
-    const [submitting, setSubmitting] = useState(false);
     const [isFavorite, setIsFavorite] = useState(false);
     const [isInWatchlist, setIsInWatchlist] = useState(false);
-    const [favoriteId, setFavoriteId] = useState(null);
-    const [watchlistId, setWatchlistId] = useState(null);
-    const [similarMovies, setSimilarMovies] = useState([]);
+    const [comment, setComment] = useState('');
+    const [comments, setComments] = useState([]);
 
     useEffect(() => {
         fetchMovieDetails();
-        fetchReviews();
-        if (user) {
-            checkFavoriteStatus();
-            checkWatchlistStatus();
+        fetchComments();
+        if (auth.currentUser) {
+            checkUserInteractions();
         }
-    }, [id, user]);
-
-    useEffect(() => {
-        if (movie) {
-            fetchSimilarMovies();
-        }
-    }, [movie]);
+    }, [id]);
 
     const fetchMovieDetails = async () => {
         try {
-            const movieDoc = await getDoc(doc(db, 'movies', id));
-            if (movieDoc.exists()) {
-                setMovie({ id: movieDoc.id, ...movieDoc.data() });
-            } else {
-                setError('Film bulunamadı');
+            const movieRef = doc(db, 'movies', id);
+            const movieDoc = await getDoc(movieRef);
+
+            if (!movieDoc.exists()) {
+                throw new Error('Film bulunamadı');
             }
+
+            const movieData = {
+                id: movieDoc.id,
+                ...movieDoc.data()
+            };
+
+            setMovie(movieData);
         } catch (err) {
             console.error('Error fetching movie:', err);
-            setError('Film bilgileri yüklenirken bir hata oluştu');
+            setError('Film bilgileri yüklenirken bir hata oluştu: ' + err.message);
         } finally {
             setLoading(false);
         }
     };
 
-    const checkFavoriteStatus = async () => {
+    const fetchComments = async () => {
         try {
-            const favoriteQuery = query(
-                collection(db, 'favorites'),
-                where('userId', '==', user.uid),
-                where('movieId', '==', id)
+            const commentsQuery = query(
+                collection(db, "comments"),
+                where("movieId", "==", id),
+                orderBy("timestamp", "desc")
             );
-            const favoriteSnapshot = await getDocs(favoriteQuery);
-            if (!favoriteSnapshot.empty) {
-                setIsFavorite(true);
-                setFavoriteId(favoriteSnapshot.docs[0].id);
-            }
-        } catch (err) {
-            console.error('Error checking favorite status:', err);
+            const commentsSnapshot = await getDocs(commentsQuery);
+            const commentsData = commentsSnapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data(),
+                timestamp: doc.data().timestamp?.toDate()
+            }));
+            setComments(commentsData);
+        } catch (error) {
+            console.error("Yorumlar yüklenirken hata:", error);
         }
     };
 
-    const checkWatchlistStatus = async () => {
+    const checkUserInteractions = async () => {
         try {
-            const watchlistQuery = query(
-                collection(db, 'watchlist'),
-                where('userId', '==', user.uid),
-                where('movieId', '==', id)
+            // Favori kontrolü
+            const favoriteQuery = query(
+                collection(db, "favorites"),
+                where("userId", "==", auth.currentUser.uid),
+                where("movieId", "==", id)
             );
-            const watchlistSnapshot = await getDocs(watchlistQuery);
-            if (!watchlistSnapshot.empty) {
-                setIsInWatchlist(true);
-                setWatchlistId(watchlistSnapshot.docs[0].id);
-            }
-        } catch (err) {
-            console.error('Error checking watchlist status:', err);
+            const favoriteSnap = await getDocs(favoriteQuery);
+            setIsFavorite(!favoriteSnap.empty);
+
+            // İzleme listesi kontrolü
+            const watchlistQuery = query(
+                collection(db, "watchlist"),
+                where("userId", "==", auth.currentUser.uid),
+                where("movieId", "==", id)
+            );
+            const watchlistSnap = await getDocs(watchlistQuery);
+            setIsInWatchlist(!watchlistSnap.empty);
+        } catch (error) {
+            console.error("Kullanıcı etkileşimleri kontrol edilirken hata:", error);
         }
     };
 
     const toggleFavorite = async () => {
-        if (!user) return;
+        if (!auth.currentUser) {
+            alert('Favorilere eklemek için giriş yapmalısınız!');
+            return;
+        }
 
         try {
-            if (isFavorite) {
-                await deleteDoc(doc(db, 'favorites', favoriteId));
-                setIsFavorite(false);
-                setFavoriteId(null);
-            } else {
-                const docRef = await addDoc(collection(db, 'favorites'), {
-                    userId: user.uid,
+            const favoriteQuery = query(
+                collection(db, "favorites"),
+                where("userId", "==", auth.currentUser.uid),
+                where("movieId", "==", id)
+            );
+            const querySnapshot = await getDocs(favoriteQuery);
+
+            if (querySnapshot.empty) {
+                await addDoc(collection(db, "favorites"), {
+                    userId: auth.currentUser.uid,
                     movieId: id,
-                    addedAt: new Date()
+                    movieTitle: movie.name,
+                    posterPath: movie.posterUrl,
+                    timestamp: serverTimestamp()
                 });
                 setIsFavorite(true);
-                setFavoriteId(docRef.id);
+                alert('Film favorilere eklendi!');
+            } else {
+                await deleteDoc(querySnapshot.docs[0].ref);
+                setIsFavorite(false);
+                alert('Film favorilerden çıkarıldı!');
             }
-        } catch (err) {
-            console.error('Error toggling favorite:', err);
+        } catch (error) {
+            console.error("Favori işlemi sırasında hata:", error);
+            alert('İşlem sırasında bir hata oluştu.');
         }
     };
 
     const toggleWatchlist = async () => {
-        if (!user) return;
+        if (!auth.currentUser) {
+            alert('İzleme listesine eklemek için giriş yapmalısınız!');
+            return;
+        }
 
         try {
-            if (isInWatchlist) {
-                await deleteDoc(doc(db, 'watchlist', watchlistId));
-                setIsInWatchlist(false);
-                setWatchlistId(null);
-            } else {
-                const docRef = await addDoc(collection(db, 'watchlist'), {
-                    userId: user.uid,
+            const watchlistQuery = query(
+                collection(db, "watchlist"),
+                where("userId", "==", auth.currentUser.uid),
+                where("movieId", "==", id)
+            );
+            const querySnapshot = await getDocs(watchlistQuery);
+
+            if (querySnapshot.empty) {
+                await addDoc(collection(db, "watchlist"), {
+                    userId: auth.currentUser.uid,
                     movieId: id,
-                    addedAt: new Date()
+                    movieTitle: movie.name,
+                    posterPath: movie.posterUrl,
+                    timestamp: serverTimestamp()
                 });
                 setIsInWatchlist(true);
-                setWatchlistId(docRef.id);
+                alert('Film izleme listesine eklendi!');
+            } else {
+                await deleteDoc(querySnapshot.docs[0].ref);
+                setIsInWatchlist(false);
+                alert('Film izleme listesinden çıkarıldı!');
             }
-        } catch (err) {
-            console.error('Error toggling watchlist:', err);
+        } catch (error) {
+            console.error("İzleme listesi işlemi sırasında hata:", error);
+            alert('İşlem sırasında bir hata oluştu.');
         }
     };
 
-    const fetchReviews = async () => {
-        try {
-            const reviewsQuery = query(collection(db, 'reviews'), where('movieId', '==', id));
-            const reviewsSnapshot = await getDocs(reviewsQuery);
-            const reviewsList = reviewsSnapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
-            setReviews(reviewsList);
-        } catch (err) {
-            console.error('Error fetching reviews:', err);
-        }
-    };
-
-    const handleReviewSubmit = async (e) => {
+    const handleCommentSubmit = async (e) => {
         e.preventDefault();
-        if (!user) return;
+        if (!auth.currentUser) {
+            alert('Yorum yapmak için giriş yapmalısınız!');
+            return;
+        }
 
-        setSubmitting(true);
+        if (!comment.trim()) {
+            alert('Lütfen bir yorum yazın!');
+            return;
+        }
+
         try {
-            await addDoc(collection(db, 'reviews'), {
+            await addDoc(collection(db, "comments"), {
+                userId: auth.currentUser.uid,
                 movieId: id,
-                userId: user.uid,
-                userEmail: user.email,
-                rating: userRating,
-                comment: review,
-                createdAt: new Date()
+                movieTitle: movie.name,
+                content: comment,
+                posterPath: movie.posterUrl,
+                timestamp: serverTimestamp(),
+                userEmail: auth.currentUser.email
             });
 
-            await fetchReviews();
-            setUserRating(0);
-            setReview('');
-        } catch (err) {
-            console.error('Error submitting review:', err);
-        } finally {
-            setSubmitting(false);
-        }
-    };
-
-    const fetchSimilarMovies = async () => {
-        try {
-            const moviesQuery = query(
-                collection(db, 'movies'),
-                where('genre', '==', movie.genre),
-                where('id', '!=', id)
-            );
-            const moviesSnapshot = await getDocs(moviesQuery);
-            const movies = moviesSnapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
-
-            const sortedMovies = movies.sort((a, b) => b.rating - a.rating).slice(0, 6);
-            setSimilarMovies(sortedMovies);
-        } catch (err) {
-            console.error('Error fetching similar movies:', err);
+            setComment('');
+            fetchComments();
+            alert('Yorumunuz eklendi!');
+        } catch (error) {
+            console.error("Yorum eklenirken hata oluştu:", error);
+            alert('Yorum eklenirken bir hata oluştu.');
         }
     };
 
@@ -197,135 +200,84 @@ function MovieDetailPage() {
         <div className="movie-detail-container">
             <div className="movie-detail-header">
                 <div className="movie-poster">
-                    <img src={movie.posterUrl} alt={movie.name} />
+                    <img 
+                        src={movie.posterUrl} 
+                        alt={movie.name} 
+                        onError={(e) => {
+                            e.target.src = '/placeholder.jpg';
+                        }}
+                    />
                 </div>
                 <div className="movie-info">
                     <h1>{movie.name}</h1>
                     <div className="movie-meta">
-                        <span className="year">{movie.year}</span>
-                        <span className="genre">{movie.genre}</span>
-                        <span className="duration">{movie.duration} dk</span>
+                        <span className="year">
+                            {movie.year}
+                        </span>
+                        <span className="duration">
+                            {movie.duration} dk
+                        </span>
                     </div>
                     <div className="rating">
-                        <span className="imdb-rating">IMDB: {movie.rating}/10</span>
-                        {reviews.length > 0 && (
-                            <span className="user-rating">
-                                Kullanıcı Puanı: {(reviews.reduce((acc, rev) => acc + rev.rating, 0) / reviews.length).toFixed(1)}/5
-                            </span>
-                        )}
+                        <span className="imdb-rating">
+                            Puan: {movie.rating.toFixed(1)}/10
+                        </span>
                     </div>
                     {user && (
                         <div className="action-buttons">
                             <button 
-                                className={`action-button ${isFavorite ? 'active' : ''}`}
                                 onClick={toggleFavorite}
+                                className={`action-button ${isFavorite ? 'active' : ''}`}
                             >
                                 {isFavorite ? '❤️ Favorilerden Çıkar' : '🤍 Favorilere Ekle'}
                             </button>
                             <button 
-                                className={`action-button ${isInWatchlist ? 'active' : ''}`}
                                 onClick={toggleWatchlist}
+                                className={`action-button ${isInWatchlist ? 'active' : ''}`}
                             >
                                 {isInWatchlist ? '✓ İzleme Listesinden Çıkar' : '+ İzleme Listesine Ekle'}
                             </button>
                         </div>
                     )}
                     <p className="description">{movie.description}</p>
-                    <div className="credits">
+                    <div className="movie-details">
                         <p><strong>Yönetmen:</strong> {movie.director}</p>
                         <p><strong>Oyuncular:</strong> {movie.actors.join(', ')}</p>
+                        <p><strong>Kategori:</strong> {movie.genre}</p>
                     </div>
                 </div>
             </div>
 
-            <div className="reviews-section">
-                <h2>Yorumlar ve Değerlendirmeler</h2>
-                
-                {user ? (
-                    <form className="review-form" onSubmit={handleReviewSubmit}>
-                        <div className="rating-input">
-                            <label>Puanınız:</label>
-                            <div className="star-rating">
-                                {[1, 2, 3, 4, 5].map((star) => (
-                                    <button
-                                        key={star}
-                                        type="button"
-                                        className={`star ${star <= userRating ? 'active' : ''}`}
-                                        onClick={() => setUserRating(star)}
-                                    >
-                                        ★
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                        <div className="review-input">
-                            <label>Yorumunuz:</label>
-                            <textarea
-                                value={review}
-                                onChange={(e) => setReview(e.target.value)}
-                                placeholder="Film hakkında düşüncelerinizi paylaşın..."
-                                required
-                            />
-                        </div>
-                        <button 
-                            type="submit" 
-                            className="submit-review" 
-                            disabled={submitting || !userRating}
-                        >
-                            {submitting ? 'Gönderiliyor...' : 'Yorumu Gönder'}
-                        </button>
-                    </form>
-                ) : (
-                    <div className="login-prompt">
-                        Yorum yapmak için <Link to="/login">giriş yapın</Link>
-                    </div>
-                )}
+            <div className="comment-section">
+                <h3>Yorum Yap</h3>
+                <form onSubmit={handleCommentSubmit}>
+                    <textarea
+                        value={comment}
+                        onChange={(e) => setComment(e.target.value)}
+                        placeholder="Yorumunuzu buraya yazın..."
+                        required
+                    />
+                    <button type="submit">Yorum Ekle</button>
+                </form>
 
-                <div className="reviews-list">
-                    {reviews.length > 0 ? (
-                        reviews.sort((a, b) => b.createdAt - a.createdAt).map(review => (
-                            <div key={review.id} className="review-item">
-                                <div className="review-header">
-                                    <span className="review-author">{review.userEmail}</span>
-                                    <span className="review-rating">
-                                        {'★'.repeat(review.rating)}{'☆'.repeat(5-review.rating)}
+                <div className="comments-list">
+                    {comments.length > 0 ? (
+                        comments.map(comment => (
+                            <div key={comment.id} className="comment-item">
+                                <div className="comment-header">
+                                    <span className="comment-author">{comment.userEmail}</span>
+                                    <span className="comment-date">
+                                        {comment.timestamp ? comment.timestamp.toLocaleDateString() : 'Tarih yok'}
                                     </span>
                                 </div>
-                                <p className="review-comment">{review.comment}</p>
-                                <span className="review-date">
-                                    {review.createdAt.toDate().toLocaleDateString()}
-                                </span>
+                                <p className="comment-content">{comment.content}</p>
                             </div>
                         ))
                     ) : (
-                        <p className="no-reviews">Henüz yorum yapılmamış. İlk yorumu siz yapın!</p>
+                        <div className="no-comments">Henüz yorum yapılmamış.</div>
                     )}
                 </div>
             </div>
-
-            {similarMovies.length > 0 && (
-                <div className="similar-movies-section">
-                    <h2>Benzer Filmler</h2>
-                    <div className="movies-grid">
-                        {similarMovies.map(movie => (
-                            <Link to={`/movie/${movie.id}`} key={movie.id} className="movie-card">
-                                <img 
-                                    src={movie.posterUrl} 
-                                    alt={movie.name} 
-                                    className="movie-poster"
-                                />
-                                <div className="movie-info">
-                                    <h3>{movie.name}</h3>
-                                    <div className="movie-meta">
-                                        <span className="year">{movie.year}</span>
-                                        <span className="rating">★ {movie.rating}</span>
-                                    </div>
-                                </div>
-                            </Link>
-                        ))}
-                    </div>
-                </div>
-            )}
         </div>
     );
 }

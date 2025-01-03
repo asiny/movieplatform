@@ -1,0 +1,64 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Admin kontrolü için yardımcı fonksiyon
+    function isAdmin() {
+      return request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Tüm kullanıcılar için okuma izni
+    match /{document=**} {
+      allow read: if true;
+    }
+
+    // Filmler koleksiyonu için kurallar
+    match /movies/{movieId} {
+      allow read: if true;
+      allow write, create, update, delete: if isAdmin();
+    }
+
+    // Kullanıcı dokümanları için kurallar
+    match /users/{userId} {
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && (
+        request.auth.uid == userId || // Kendi profilini güncelleyebilir
+        isAdmin() // Admin tüm kullanıcıları güncelleyebilir
+      );
+      allow delete: if request.auth != null && (
+        request.auth.uid == userId || // Kendi profilini silebilir
+        isAdmin() // Admin tüm kullanıcıları silebilir
+      );
+    }
+
+    // Favoriler için kurallar
+    match /favorites/{document} {
+      allow read: if true;
+      allow write, create, delete: if request.auth != null;
+    }
+    
+    // İzleme listesi için kurallar
+    match /watchlist/{document} {
+      allow read: if true;
+      allow write, create, delete: if request.auth != null;
+    }
+    
+    // Yorumlar için kurallar
+    match /comments/{document} {
+      allow read: if true;
+      allow write, create, delete: if request.auth != null;
+    }
+
+    // Admin işlemleri için kurallar
+    match /admin/{document} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // Öneri ayarları için kurallar
+    match /settings/{document} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+  }
+} 

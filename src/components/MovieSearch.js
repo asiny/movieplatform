@@ -1,75 +1,118 @@
 import React, { useState } from 'react';
 import './MovieSearch.css';
 
-function MovieSearch({ onSearch, categories }) {
+function MovieSearch({ onSearch, onFilter }) {
     const [searchTerm, setSearchTerm] = useState('');
-    const [selectedCategory, setSelectedCategory] = useState('all');
-    const [selectedYear, setSelectedYear] = useState('all');
-    const [selectedRating, setSelectedRating] = useState('all');
+    const [filters, setFilters] = useState({
+        year: '',
+        minRating: '',
+        sortBy: 'title',
+        genre: ''
+    });
 
-    const handleSearch = (e) => {
-        e.preventDefault();
-        onSearch({
-            searchTerm,
-            category: selectedCategory,
-            year: selectedYear,
-            rating: selectedRating
-        });
+    const currentYear = new Date().getFullYear();
+    const years = Array.from({ length: currentYear - 1900 + 1 }, (_, i) => currentYear - i);
+
+    // Sabit kategori listesi
+    const genres = [
+        "Aksiyon",
+        "Macera",
+        "Animasyon",
+        "Komedi",
+        "Suç",
+        "Belgesel",
+        "Dram",
+        "Aile",
+        "Fantastik",
+        "Tarih",
+        "Korku",
+        "Müzik",
+        "Gizem",
+        "Romantik",
+        "Bilim Kurgu",
+        "TV Film",
+        "Gerilim",
+        "Savaş",
+        "Vahşi Batı"
+    ];
+
+    const handleSearchChange = (e) => {
+        const value = e.target.value;
+        setSearchTerm(value);
+        onSearch(value);
+    };
+
+    const handleFilterChange = (e) => {
+        const { name, value } = e.target;
+        const newFilters = {
+            ...filters,
+            [name]: value
+        };
+        setFilters(newFilters);
+        onFilter(newFilters);
     };
 
     return (
-        <div className="movie-search">
-            <form onSubmit={handleSearch}>
-                <div className="search-input">
-                    <input
-                        type="text"
-                        placeholder="Film veya dizi ara..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                </div>
-                
-                <div className="filters">
-                    <select
-                        value={selectedCategory}
-                        onChange={(e) => setSelectedCategory(e.target.value)}
-                    >
-                        <option value="all">Tüm Kategoriler</option>
-                        {categories.map((category) => (
-                            <option key={category} value={category}>
-                                {category}
-                            </option>
-                        ))}
-                    </select>
+        <div className="search-container">
+            <div className="search-bar">
+                <input
+                    type="text"
+                    placeholder="Film ara..."
+                    value={searchTerm}
+                    onChange={handleSearchChange}
+                />
+            </div>
 
-                    <select
-                        value={selectedYear}
-                        onChange={(e) => setSelectedYear(e.target.value)}
-                    >
-                        <option value="all">Tüm Yıllar</option>
-                        {Array.from({ length: 2024 - 1990 + 1 }, (_, i) => 2024 - i).map((year) => (
-                            <option key={year} value={year}>
-                                {year}
-                            </option>
-                        ))}
-                    </select>
+            <div className="filters">
+                <select 
+                    name="genre"
+                    value={filters.genre}
+                    onChange={handleFilterChange}
+                >
+                    <option value="">Tüm Kategoriler</option>
+                    {genres.map(genre => (
+                        <option key={genre} value={genre}>
+                            {genre}
+                        </option>
+                    ))}
+                </select>
 
-                    <select
-                        value={selectedRating}
-                        onChange={(e) => setSelectedRating(e.target.value)}
-                    >
-                        <option value="all">Tüm Puanlar</option>
-                        <option value="9">9+ Puan</option>
-                        <option value="8">8+ Puan</option>
-                        <option value="7">7+ Puan</option>
-                        <option value="6">6+ Puan</option>
-                    </select>
-                </div>
+                <select 
+                    name="year" 
+                    value={filters.year}
+                    onChange={handleFilterChange}
+                >
+                    <option value="">Yıl Seçin</option>
+                    {years.map(year => (
+                        <option key={year} value={year.toString()}>
+                            {year}
+                        </option>
+                    ))}
+                </select>
 
-                <button type="submit" className="search-button">
-                    Ara
-                </button>
-            </form>
+                <select 
+                    name="minRating" 
+                    value={filters.minRating}
+                    onChange={handleFilterChange}
+                >
+                    <option value="">Minimum Puan</option>
+                    <option value="9">9+ Puan</option>
+                    <option value="8">8+ Puan</option>
+                    <option value="7">7+ Puan</option>
+                    <option value="6">6+ Puan</option>
+                    <option value="5">5+ Puan</option>
+                </select>
+
+                <select 
+                    name="sortBy" 
+                    value={filters.sortBy}
+                    onChange={handleFilterChange}
+                >
+                    <option value="title">İsme Göre</option>
+                    <option value="rating">Puana Göre</option>
+                    <option value="year">Yıla Göre</option>
+                </select>
+            </div>
         </div>
     );
 }

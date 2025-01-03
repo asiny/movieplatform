@@ -1,13 +1,13 @@
 .header {
+    background: rgba(0, 0, 0, 0.95);
+    padding: 0.8rem 0;
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
-    background: rgba(20, 20, 20, 0.95);
-    backdrop-filter: blur(10px);
     z-index: 1000;
-    padding: 1rem 0;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .header-content {
@@ -20,34 +20,76 @@
 }
 
 .logo {
-    font-size: 1.8rem;
-    font-weight: 700;
-    color: var(--primary-color);
+    color: #ff0000;
     text-decoration: none;
+    font-size: 1.5rem;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    text-transform: uppercase;
     letter-spacing: 1px;
+    min-width: 180px;
+}
+
+.logo:hover {
+    color: #ff3333;
 }
 
 .nav-menu {
     display: flex;
-    align-items: center;
     gap: 2rem;
+    align-items: center;
+    justify-content: center;
+    flex-grow: 1;
 }
 
 .nav-link {
-    color: var(--text-color);
+    color: #fff;
     text-decoration: none;
-    font-size: 1rem;
     font-weight: 500;
-    transition: color 0.3s ease;
+    transition: all 0.3s ease;
     padding: 0.5rem 1rem;
-    border-radius: 4px;
+    font-size: 0.95rem;
+    position: relative;
 }
 
 .nav-link:hover {
-    color: var(--primary-color);
+    color: #ff0000;
 }
 
-/* Dropdown Styles */
+.nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: #ff0000;
+    transition: width 0.3s ease;
+}
+
+.nav-link:hover::after {
+    width: 100%;
+}
+
+.admin-link {
+    background: #ff0000;
+    color: white !important;
+    padding: 0.5rem 1.2rem;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    font-weight: 600;
+}
+
+.admin-link:hover {
+    background: #cc0000;
+    transform: translateY(-2px);
+}
+
+.admin-link::after {
+    display: none;
+}
+
 .dropdown {
     position: relative;
     display: inline-block;
@@ -56,123 +98,264 @@
 .dropdown-trigger {
     background: none;
     border: none;
-    color: var(--text-color);
-    font-size: 1rem;
-    font-weight: 500;
+    color: white;
+    font-size: 0.95rem;
     cursor: pointer;
+    font-weight: 500;
     padding: 0.5rem 1rem;
+    display: flex;
+    align-items: center;
+    transition: all 0.3s ease;
 }
 
 .dropdown-content {
     display: none;
     position: absolute;
     top: 100%;
-    left: 0;
-    background: var(--surface-color);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1a1a;
     min-width: 200px;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
     border-radius: 4px;
+    overflow: hidden;
+    margin-top: 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
     padding: 0.5rem 0;
-    z-index: 1;
 }
 
 .dropdown:hover .dropdown-content {
     display: block;
-    animation: fadeIn 0.3s ease;
+}
+
+.dropdown::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    height: 20px;
+    background: transparent;
+}
+
+.dropdown-content::before {
+    content: '';
+    position: absolute;
+    top: -20px;
+    left: 0;
+    width: 100%;
+    height: 20px;
+    background: transparent;
 }
 
 .dropdown-content a {
-    color: var(--text-color);
+    color: white;
+    padding: 0.8rem 1.2rem;
     text-decoration: none;
     display: block;
-    padding: 0.8rem 1.2rem;
-    transition: background-color 0.3s ease;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+    text-align: center;
 }
 
 .dropdown-content a:hover {
-    background-color: var(--surface-light);
-    color: var(--primary-color);
+    background: #ff0000;
+    color: white;
 }
 
-/* Auth Buttons */
 .auth-buttons {
     display: flex;
     align-items: center;
     gap: 1rem;
+    min-width: 180px;
+    justify-content: flex-end;
+}
+
+.user-section {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
 }
 
 .user-email {
-    color: var(--text-color);
-    margin-right: 1rem;
+    color: #fff;
     font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.user-email .crown {
+    color: #ffd700;
+    font-size: 1.2em;
 }
 
 .auth-button {
-    padding: 0.6rem 1.2rem;
+    padding: 0.4rem 1rem;
+    border: none;
     border-radius: 4px;
+    cursor: pointer;
     font-weight: 500;
     transition: all 0.3s ease;
+    font-size: 0.9rem;
 }
 
-.auth-button.login {
+.login {
     background: transparent;
-    border: 2px solid var(--primary-color);
+    color: #ff0000;
+    border: 1px solid #ff0000;
 }
 
-.auth-button.login:hover {
-    background: var(--primary-color);
+.login:hover {
+    background: rgba(255, 0, 0, 0.1);
 }
 
-.auth-button.signup {
-    background: var(--primary-color);
+.signup {
+    background: #ff0000;
+    color: white;
 }
 
-.auth-button.signup:hover {
-    background: var(--secondary-color);
+.signup:hover {
+    background: #cc0000;
 }
 
-.auth-button.logout {
-    background: transparent;
-    border: 2px solid var(--primary-color);
+.logout {
+    background: rgba(255, 59, 59, 0.1);
+    color: #ff3b3b;
+    border: 1px solid rgba(255, 59, 59, 0.2);
+    padding: 0.3rem 0.8rem;
+    font-size: 0.85rem;
 }
 
-.auth-button.logout:hover {
-    background: var(--primary-color);
+.logout:hover {
+    background: #ff3b3b;
+    color: white;
 }
 
+.profile-link {
+    color: #fff;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    padding: 0.3rem 0.8rem;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.profile-link:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.mobile-menu-button {
+    display: none;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+}
+
+/* Mobil Menü Stilleri */
 @media (max-width: 1024px) {
-    .header-content {
-        padding: 0 1rem;
-    }
-
     .nav-menu {
         gap: 1rem;
+    }
+
+    .nav-link {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.9rem;
+    }
+
+    .auth-button {
+        padding: 0.4rem 0.8rem;
     }
 }
 
 @media (max-width: 768px) {
-    .header {
-        padding: 0.8rem 0;
+    .header-content {
+        padding: 0 1rem;
     }
 
-    .logo {
-        font-size: 1.5rem;
+    .mobile-menu-button {
+        display: block;
     }
 
     .nav-menu {
         display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: #1a1a1a;
+        padding: 1rem;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .nav-menu.active {
+        display: flex;
+    }
+
+    .nav-link {
+        width: 100%;
+        text-align: center;
+        padding: 0.8rem;
+    }
+
+    .dropdown {
+        width: 100%;
+    }
+
+    .dropdown-content {
+        position: static;
+        transform: none;
+        width: 100%;
+        margin-top: 0.5rem;
+        box-shadow: none;
+        border: none;
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .dropdown-content a {
+        padding: 0.8rem;
+        text-align: center;
+    }
+
+    .user-section {
+        padding: 0.4rem 0.8rem;
+    }
+
+    .user-email {
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .logo {
+        font-size: 1.2rem;
+        min-width: auto;
     }
 
     .auth-buttons {
         gap: 0.5rem;
+        min-width: auto;
     }
 
     .auth-button {
-        padding: 0.5rem 1rem;
-        font-size: 0.9rem;
+        padding: 0.3rem 0.6rem;
+        font-size: 0.85rem;
     }
 
-    .user-email {
-        display: none;
+    .user-section {
+        padding: 0.3rem 0.6rem;
     }
+}
+
+/* Ana içerik için padding ekleme */
+main {
+    padding-top: 70px; /* Header yüksekliği kadar padding */
 }

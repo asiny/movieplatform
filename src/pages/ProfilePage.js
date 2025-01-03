@@ -1,95 +1,71 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { UserContext } from '../context/UserContext';
-import { collection, query, where, getDocs, doc, updateDoc } from 'firebase/firestore';
-import { db } from '../firebase';
+import React, { useState, useEffect } from 'react';
+import { auth, db } from '../firebase';
+import { collection, query, where, getDocs, orderBy, onSnapshot } from 'firebase/firestore';
+import { Link } from 'react-router-dom';
 import './ProfilePage.css';
 
 function ProfilePage() {
-    const { user } = useContext(UserContext);
-    const [reviews, setReviews] = useState([]);
-    const [watchlist, setWatchlist] = useState([]);
+    const [userComments, setUserComments] = useState([]);
     const [favorites, setFavorites] = useState([]);
+    const [watchlist, setWatchlist] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState('reviews');
+    const [activeTab, setActiveTab] = useState('favorites');
 
     useEffect(() => {
-        if (user) {
-            fetchUserData();
-        }
-    }, [user]);
+        if (!auth.currentUser) return;
 
-    const fetchUserData = async () => {
-        try {
-            // Kullanıcının yorumlarını getir
-            const reviewsQuery = query(
-                collection(db, 'reviews'),
-                where('userId', '==', user.uid)
-            );
-            const reviewsSnapshot = await getDocs(reviewsQuery);
-            const reviewsList = [];
-            
-            for (const reviewDoc of reviewsSnapshot.docs) {
-                const reviewData = reviewDoc.data();
-                // Film bilgilerini getir
-                const movieDoc = await doc(db, 'movies', reviewData.movieId).get();
-                if (movieDoc.exists()) {
-                    reviewsList.push({
-                        id: reviewDoc.id,
-                        ...reviewData,
-                        movie: { id: movieDoc.id, ...movieDoc.data() }
-                    });
-                }
-            }
-            setReviews(reviewsList);
+        // Favoriler için real-time listener
+        const favoritesQuery = query(
+            collection(db, "favorites"),
+            where("userId", "==", auth.currentUser.uid),
+            orderBy("timestamp", "desc")
+        );
+        const unsubscribeFavorites = onSnapshot(favoritesQuery, (snapshot) => {
+            const favoritesData = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+            setFavorites(favoritesData);
+        });
 
-            // İzleme listesini getir
-            const watchlistQuery = query(
-                collection(db, 'watchlist'),
-                where('userId', '==', user.uid)
-            );
-            const watchlistSnapshot = await getDocs(watchlistQuery);
-            const watchlistMovies = [];
-            
-            for (const watchlistDoc of watchlistSnapshot.docs) {
-                const movieDoc = await doc(db, 'movies', watchlistDoc.data().movieId).get();
-                if (movieDoc.exists()) {
-                    watchlistMovies.push({
-                        id: watchlistDoc.id,
-                        ...watchlistDoc.data(),
-                        movie: { id: movieDoc.id, ...movieDoc.data() }
-                    });
-                }
-            }
-            setWatchlist(watchlistMovies);
+        // İzleme listesi için real-time listener
+        const watchlistQuery = query(
+            collection(db, "watchlist"),
+            where("userId", "==", auth.currentUser.uid),
+            orderBy("timestamp", "desc")
+        );
+        const unsubscribeWatchlist = onSnapshot(watchlistQuery, (snapshot) => {
+            const watchlistData = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+            setWatchlist(watchlistData);
+        });
 
-            // Favorileri getir
-            const favoritesQuery = query(
-                collection(db, 'favorites'),
-                where('userId', '==', user.uid)
-            );
-            const favoritesSnapshot = await getDocs(favoritesQuery);
-            const favoriteMovies = [];
-            
-            for (const favoriteDoc of favoritesSnapshot.docs) {
-                const movieDoc = await doc(db, 'movies', favoriteDoc.data().movieId).get();
-                if (movieDoc.exists()) {
-                    favoriteMovies.push({
-                        id: favoriteDoc.id,
-                        ...favoriteDoc.data(),
-                        movie: { id: movieDoc.id, ...movieDoc.data() }
-                    });
-                }
-            }
-            setFavorites(favoriteMovies);
-
-        } catch (error) {
-            console.error('Error fetching user data:', error);
-        } finally {
+        // Yorumlar için real-time listener
+        const commentsQuery = query(
+            collection(db, "comments"),
+            where("userId", "==", auth.currentUser.uid),
+            orderBy("timestamp", "desc")
+        );
+        const unsubscribeComments = onSnapshot(commentsQuery, (snapshot) => {
+            const commentsData = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+            setUserComments(commentsData);
             setLoading(false);
-        }
-    };
+        });
 
-    if (!user) {
+        // Cleanup function to unsubscribe from all listeners
+        return () => {
+            unsubscribeFavorites();
+            unsubscribeWatchlist();
+            unsubscribeComments();
+        };
+    }, []);
+
+    if (!auth.currentUser) {
         return (
             <div className="profile-container">
                 <div className="login-prompt">
@@ -100,25 +76,17 @@ function ProfilePage() {
     }
 
     if (loading) {
-        return (
-            <div className="profile-container">
-                <div className="loading">Yükleniyor...</div>
-            </div>
-        );
+        return <div className="loading">Yükleniyor...</div>;
     }
 
     return (
         <div className="profile-container">
             <div className="profile-header">
                 <div className="profile-info">
-                    <h1>Profil</h1>
-                    <p className="email">{user.email}</p>
+                    <h1>{auth.currentUser.displayName || 'Kullanıcı'}</h1>
+                    <span className="email">{auth.currentUser.email}</span>
                 </div>
                 <div className="profile-stats">
-                    <div className="stat">
-                        <span className="stat-value">{reviews.length}</span>
-                        <span className="stat-label">Yorum</span>
-                    </div>
                     <div className="stat">
                         <span className="stat-value">{favorites.length}</span>
                         <span className="stat-label">Favori</span>
@@ -127,16 +95,14 @@ function ProfilePage() {
                         <span className="stat-value">{watchlist.length}</span>
                         <span className="stat-label">İzleme Listesi</span>
                     </div>
+                    <div className="stat">
+                        <span className="stat-value">{userComments.length}</span>
+                        <span className="stat-label">Yorum</span>
+                    </div>
                 </div>
             </div>
 
             <div className="profile-tabs">
-                <button 
-                    className={`tab ${activeTab === 'reviews' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('reviews')}
-                >
-                    Yorumlarım
-                </button>
                 <button 
                     className={`tab ${activeTab === 'favorites' ? 'active' : ''}`}
                     onClick={() => setActiveTab('favorites')}
@@ -149,73 +115,72 @@ function ProfilePage() {
                 >
                     İzleme Listem
                 </button>
+                <button 
+                    className={`tab ${activeTab === 'comments' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('comments')}
+                >
+                    Yorumlarım
+                </button>
             </div>
 
             <div className="profile-content">
-                {activeTab === 'reviews' && (
-                    <div className="reviews-list">
-                        {reviews.length > 0 ? (
-                            reviews.map(review => (
-                                <div key={review.id} className="review-card">
-                                    <img 
-                                        src={review.movie.posterUrl} 
-                                        alt={review.movie.name} 
-                                        className="movie-poster"
-                                    />
-                                    <div className="review-content">
-                                        <h3>{review.movie.name}</h3>
-                                        <div className="review-rating">
-                                            {'★'.repeat(review.rating)}{'☆'.repeat(5-review.rating)}
-                                        </div>
-                                        <p className="review-text">{review.comment}</p>
-                                        <span className="review-date">
-                                            {review.createdAt.toDate().toLocaleDateString()}
-                                        </span>
-                                    </div>
-                                </div>
-                            ))
-                        ) : (
-                            <p className="no-content">Henüz yorum yapmadınız.</p>
-                        )}
-                    </div>
-                )}
-
                 {activeTab === 'favorites' && (
                     <div className="movies-grid">
-                        {favorites.length > 0 ? (
-                            favorites.map(favorite => (
-                                <div key={favorite.id} className="movie-card">
-                                    <img 
-                                        src={favorite.movie.posterUrl} 
-                                        alt={favorite.movie.name} 
-                                        className="movie-poster"
-                                    />
-                                    <h3>{favorite.movie.name}</h3>
-                                    <p className="movie-year">{favorite.movie.year}</p>
+                        {favorites.length > 0 ? favorites.map(movie => (
+                            <Link to={`/movie/${movie.movieId}`} key={movie.id} className="movie-card">
+                                <img 
+                                    src={movie.posterPath} 
+                                    alt={movie.movieTitle} 
+                                    className="movie-poster"
+                                />
+                                <div className="movie-info">
+                                    <h3>{movie.movieTitle}</h3>
                                 </div>
-                            ))
-                        ) : (
-                            <p className="no-content">Favori film eklemediniz.</p>
+                            </Link>
+                        )) : (
+                            <div className="no-content">Henüz favori film eklemediniz.</div>
                         )}
                     </div>
                 )}
 
                 {activeTab === 'watchlist' && (
                     <div className="movies-grid">
-                        {watchlist.length > 0 ? (
-                            watchlist.map(item => (
-                                <div key={item.id} className="movie-card">
-                                    <img 
-                                        src={item.movie.posterUrl} 
-                                        alt={item.movie.name} 
-                                        className="movie-poster"
-                                    />
-                                    <h3>{item.movie.name}</h3>
-                                    <p className="movie-year">{item.movie.year}</p>
+                        {watchlist.length > 0 ? watchlist.map(movie => (
+                            <Link to={`/movie/${movie.movieId}`} key={movie.id} className="movie-card">
+                                <img 
+                                    src={movie.posterPath} 
+                                    alt={movie.movieTitle} 
+                                    className="movie-poster"
+                                />
+                                <div className="movie-info">
+                                    <h3>{movie.movieTitle}</h3>
                                 </div>
-                            ))
-                        ) : (
-                            <p className="no-content">İzleme listeniz boş.</p>
+                            </Link>
+                        )) : (
+                            <div className="no-content">İzleme listeniz boş.</div>
+                        )}
+                    </div>
+                )}
+
+                {activeTab === 'comments' && (
+                    <div className="comments-list">
+                        {userComments.length > 0 ? userComments.map(comment => (
+                            <div key={comment.id} className="comment-card">
+                                <Link to={`/movie/${comment.movieId}`} className="comment-movie-info">
+                                    <img 
+                                        src={comment.posterPath} 
+                                        alt={comment.movieTitle} 
+                                        className="comment-movie-poster"
+                                    />
+                                    <h3>{comment.movieTitle}</h3>
+                                </Link>
+                                <p className="comment-content">{comment.content}</p>
+                                <span className="comment-date">
+                                    {comment.timestamp?.toDate().toLocaleDateString()}
+                                </span>
+                            </div>
+                        )) : (
+                            <div className="no-content">Henüz yorum yapmadınız.</div>
                         )}
                     </div>
                 )}

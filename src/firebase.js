@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { getFirestore, collection } from "firebase/firestore";
 
 const firebaseConfig = {
     apiKey: "AIzaSyCzwGkSaeyxmimzT6892hthThSJOhDh2dg",
@@ -16,4 +16,9 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-export { auth, db };
+// Koleksiyon referansları
+const commentsRef = collection(db, "comments");
+const favoritesRef = collection(db, "favorites");
+const watchlistRef = collection(db, "watchlist");
+
+export { auth, db, commentsRef, favoritesRef, watchlistRef };

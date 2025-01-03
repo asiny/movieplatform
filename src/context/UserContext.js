@@ -1,31 +1,24 @@
 import React, { createContext, useState, useEffect } from "react";
 import { auth, db } from "../firebase";
-import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 
 export const UserContext = createContext();
 
-export function UserProvider({ children }) {
+export const UserProvider = ({ children }) => {
     const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
     const [isAdmin, setIsAdmin] = useState(false);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, async (user) => {
+        const unsubscribe = auth.onAuthStateChanged(async (user) => {
             if (user) {
-                setUser(user);
-                // Kullanıcı rolünü kontrol et
-                try {
-                    const userDoc = await getDoc(doc(db, 'users', user.uid));
-                    if (userDoc.exists() && userDoc.data().role === 'admin') {
-                        setIsAdmin(true);
-                    } else {
-                        setIsAdmin(false);
-                    }
-                } catch (error) {
-                    console.error('Error checking admin role:', error);
-                    setIsAdmin(false);
+                // Kullanıcı bilgilerini Firestore'dan al
+                const userDoc = await getDoc(doc(db, 'users', user.uid));
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    setIsAdmin(userData.role === 'admin');
                 }
+                setUser(user);
             } else {
                 setUser(null);
                 setIsAdmin(false);
@@ -33,18 +26,16 @@ export function UserProvider({ children }) {
             setLoading(false);
         });
 
-        return () => unsubscribe();
+        return unsubscribe;
     }, []);
 
-    const value = {
-        user,
-        loading,
-        isAdmin
-    };
+    if (loading) {
+        return <div className="loading">Yükleniyor...</div>;
+    }
 
     return (
-        <UserContext.Provider value={value}>
-            {!loading && children}
+        <UserContext.Provider value={{ user, isAdmin }}>
+            {children}
         </UserContext.Provider>
     );
-}
+};

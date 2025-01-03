@@ -10,6 +10,7 @@ import MovieDetailPage from "./pages/MovieDetailPage";
 import ProfilePage from "./pages/ProfilePage";
 import RecommendationsPage from "./pages/RecommendationsPage";
 import AdminPage from "./pages/AdminPage";
+import HomePage from "./pages/HomePage";
 import "./styles/global.css";
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
                     <main className="main-content">
                         <Routes>
                             <Route path="/" element={<WelcomePage />} />
+                            <Route path="/home" element={<HomePage />} />
                             <Route path="/login" element={<LoginPage />} />
                             <Route path="/signup" element={<SignupPage />} />
                             <Route path="/movies" element={<MoviePage />} />

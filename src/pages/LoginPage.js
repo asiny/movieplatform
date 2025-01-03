@@ -19,7 +19,7 @@ function LoginPage() {
 
         try {
             await signInWithEmailAndPassword(auth, email, password);
-            navigate("/movies");
+            navigate("/home");
         } catch (err) {
             console.error("Login error:", err);
             setError("E-posta veya şifre hatalı!");
